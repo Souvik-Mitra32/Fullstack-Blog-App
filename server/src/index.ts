@@ -12,7 +12,7 @@ const app = express()
 const PORT = process.env.PORT || 3000
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || []
 
-app.use(cors({ origin: "*" })) // temporarily allow all for testing
+app.use(cors({ origin: allowedOrigins }))
 app.use("/", appRoutes)
 ;(async () => {
   await connectDB()
