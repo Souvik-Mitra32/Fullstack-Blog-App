@@ -4,7 +4,7 @@ exports.getUserById = exports.getUsers = void 0;
 const user_1 = require("../models/user");
 const getUsers = async (req, res) => {
     try {
-        const users = await user_1.User.find();
+        const users = await user_1.User.find().select("-_id");
         return res.status(200).json({
             success: true,
             message: "Users fetched successfully",
@@ -31,8 +31,7 @@ exports.getUsers = getUsers;
 const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = await user_1.User.findOne({ id });
-        // Need to validate whether the id is of a valid user or not
+        const user = await user_1.User.findOne({ id }).select("-_id");
         return res.status(200).json({
             success: true,
             message: "User fetched successfully",

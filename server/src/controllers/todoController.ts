@@ -7,7 +7,7 @@ export const getTodos = async (req: Request, res: Response) => {
 
     const condition = userId ? { userId } : {}
 
-    const todos = await Todo.find(condition)
+    const todos = await Todo.find(condition).select("-_id")
 
     return res.status(200).json({
       success: true,

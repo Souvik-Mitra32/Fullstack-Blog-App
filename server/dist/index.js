@@ -14,7 +14,9 @@ if (process.env.NODE_ENV !== "production") {
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [];
-app.use((0, cors_1.default)({ origin: "*" })); // temporarily allow all for testing
+app.use((0, cors_1.default)({ origin: allowedOrigins }));
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
 app.use("/", routes_1.default);
 (async () => {
     await (0, db_1.connectDB)();

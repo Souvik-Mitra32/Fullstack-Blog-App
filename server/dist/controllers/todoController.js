@@ -6,7 +6,7 @@ const getTodos = async (req, res) => {
     try {
         const { userId } = req.query;
         const condition = userId ? { userId } : {};
-        const todos = await todo_1.Todo.find(condition);
+        const todos = await todo_1.Todo.find(condition).select("-_id");
         return res.status(200).json({
             success: true,
             message: "Todos fetched successfully",

@@ -1,9 +1,11 @@
-import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router"
+import { useLoaderData, type LoaderFunctionArgs } from "react-router"
 import { getUserById } from "../api/users"
-import { getPostsByUserId } from "../api/posts"
 import type { Post } from "./Post"
 import { getTodosByUserId } from "../api/todos"
 import type { Todo } from "./TodoList"
+import { getPosts } from "../api/posts"
+import { PostCard } from "../components/PostCard"
+import { TodoItem } from "../components/TodoItem"
 
 export type User = {
   id: number
@@ -55,30 +57,15 @@ function User() {
       <h3 className="mt-4 mb-2">Posts</h3>
       <div className="card-grid">
         {posts.map((post) => (
-          <div key={post.id} className="card">
-            <div className="card-header">{post.title}</div>
-            <div className="card-body">
-              <div className="card-preview-text">{post.body}</div>
-            </div>
-            <div className="card-footer">
-              <Link className="btn" to={`../../posts/${post.id}`}>
-                View
-              </Link>
-            </div>
-          </div>
+          <PostCard key={post.id} {...post} throughUser />
         ))}
-        <h3 className="mt-4 mb-2">Todos</h3>
-        <ul>
-          {todos.map((todo) => (
-            <li
-              key={todo.id}
-              className={todo.completed ? "strike-through" : undefined}
-            >
-              {todo.title}
-            </li>
-          ))}
-        </ul>
       </div>
+      <h3 className="mt-4 mb-2">Todos</h3>
+      <ul>
+        {todos.map((todo) => (
+          <TodoItem key={todo.id} {...todo} />
+        ))}
+      </ul>
     </>
   )
 }
@@ -86,7 +73,7 @@ function User() {
 async function loader({ params, request: { signal } }: LoaderFunctionArgs) {
   if (!params.id) return
   const user = await getUserById(params.id, { signal })
-  const posts = getPostsByUserId(user.id, { signal })
+  const posts = getPosts({ userId: user.id }, { signal })
   const todos = getTodosByUserId(user.id, { signal })
 
   return { user, posts: await posts, todos: await todos }

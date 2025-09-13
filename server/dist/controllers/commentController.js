@@ -5,7 +5,7 @@ const comment_1 = require("../models/comment");
 const getCommentsbyPostId = async (req, res) => {
     try {
         const { id: postId } = req.params;
-        const comments = await comment_1.Comment.find({ postId });
+        const comments = await comment_1.Comment.find({ postId }).select("-_id");
         return res.status(200).json({
             success: true,
             message: "Comments fetched successfully",

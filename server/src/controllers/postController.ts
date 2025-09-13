@@ -3,11 +3,24 @@ import { Post } from "../models/post"
 
 export const getPosts = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.query
+    const { userId, q } = req.query
 
-    const condition = userId ? { userId } : {}
+    const condition: Record<string, unknown> = {}
 
-    const posts = await Post.find(condition)
+    // search by keyword
+    if (q && typeof q === "string") {
+      condition.$or = [
+        { title: { $regex: q, $options: "i" } },
+        { body: { $regex: q, $options: "i" } },
+      ]
+    }
+
+    // filter by userId
+    if (userId && !isNaN(Number(userId))) {
+      condition.userId = Number(userId)
+    }
+
+    const posts = await Post.find(condition).select("-_id")
 
     return res.status(200).json({
       success: true,
@@ -35,8 +48,8 @@ export const getPostById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
-    const post = await Post.findOne({ id })
-    // Need to validate whether the id is of a valid post or not
+    const post = await Post.findOne({ id }).select("-_id")
+
     return res.status(200).json({
       success: true,
       message: "Post fetched successfully",
@@ -53,6 +66,71 @@ export const getPostById = async (req: Request, res: Response) => {
       message: err.message || "Server Error",
       error: {
         code: "POST_NOT_FOUND",
+        details: null,
+      },
+    })
+  }
+}
+
+export const createPost = async (req: Request, res: Response) => {
+  try {
+    const allPosts = await Post.find()
+    const { title, body, userId } = req.body
+
+    const newPost = await Post.create({
+      title,
+      body,
+      userId: Number(userId),
+      id: allPosts.length + 1,
+    })
+
+    return res.status(201).json({
+      success: true,
+      message: "Post created successfully",
+      data: newPost,
+      meta: {
+        count: 1,
+        page: 1,
+        limit: 1,
+      },
+    })
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Server Error",
+      error: {
+        code: "ERROR_CREATING_POST",
+        details: null,
+      },
+    })
+  }
+}
+
+export const updatePost = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { title, body, userId } = req.body
+
+    await Post.updateOne({ id: Number(id) }, { title, body, userId })
+
+    const updatedPost = await Post.findOne({ id: Number(id) }).select("-_id")
+
+    return res.status(201).json({
+      success: true,
+      message: "Post updated successfully",
+      data: updatedPost,
+      meta: {
+        count: 1,
+        page: 1,
+        limit: 1,
+      },
+    })
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Server Error",
+      error: {
+        code: "ERROR_UPDATING_POST",
         details: null,
       },
     })

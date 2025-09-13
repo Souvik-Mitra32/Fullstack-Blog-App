@@ -5,7 +5,7 @@ export const getCommentsbyPostId = async (req: Request, res: Response) => {
   try {
     const { id: postId } = req.params
 
-    const comments = await Comment.find({ postId })
+    const comments = await Comment.find({ postId }).select("-_id")
 
     return res.status(200).json({
       success: true,

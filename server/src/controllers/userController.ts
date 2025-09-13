@@ -3,7 +3,7 @@ import { User } from "../models/user"
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.find()
+    const users = await User.find().select("-_id")
 
     return res.status(200).json({
       success: true,
@@ -31,8 +31,8 @@ export const getUserById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
-    const user = await User.findOne({ id })
-    // Need to validate whether the id is of a valid user or not
+    const user = await User.findOne({ id }).select("-_id")
+
     return res.status(200).json({
       success: true,
       message: "User fetched successfully",

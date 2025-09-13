@@ -14,7 +14,7 @@ This project is being built in **3 versions**, each focusing on different aspect
   - Clean data representation using cards, lists, and detail pages
   - Backend API serves data from `/posts`, `/users`, `/todos`, and related endpoints
 
-- **v2 (Planned)** – Focused on forms and actions
+- **v2 (Completed)** – Focused on forms and actions
 
   - Search posts by keywords
   - Filter posts by users
@@ -114,8 +114,7 @@ The React app will run on:
 
 ## 🔮 Future Roadmap
 
-- v2 → Forms, actions, searching, filtering, add/edit posts
-- v3 → Refactor file structure, add skeleton loaders, clean code improvements
+- Refactor file structure, add skeleton loaders, clean code improvements
 
 ## 📜 License
 

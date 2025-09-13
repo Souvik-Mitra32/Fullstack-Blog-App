@@ -8,6 +8,8 @@ const postController_1 = require("../../../controllers/postController");
 const commentRoutes_1 = __importDefault(require("./commentRoutes"));
 const router = (0, express_1.Router)();
 router.get("/", postController_1.getPosts);
+router.post("/", postController_1.createPost);
 router.get("/:id", postController_1.getPostById);
+router.put("/:id", postController_1.updatePost);
 router.use("/:id/comments", commentRoutes_1.default);
 exports.default = router;
