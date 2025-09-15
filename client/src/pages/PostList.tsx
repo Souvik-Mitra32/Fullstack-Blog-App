@@ -3,13 +3,15 @@ import {
   Link,
   type LoaderFunctionArgs,
   Form,
+  Await,
 } from "react-router"
 import { getPosts } from "../api/posts"
 import type { Post } from "./Post"
 import { getUsers } from "../api/users"
 import type { User } from "./User"
-import { useEffect, useRef } from "react"
-import { PostCard } from "../components/PostCard"
+import { Suspense, useEffect, useRef } from "react"
+import { PostCard, PostCardSkeleton } from "../components/PostCard"
+import { SkeletonList } from "../components/Skeleton"
 
 export type SearchedQuery = {
   q?: string
@@ -17,15 +19,15 @@ export type SearchedQuery = {
 }
 
 type LoaderData = {
-  posts: Post[]
-  users: User[]
+  postsPromise: Promise<Post[]>
+  usersPromise: Promise<User[]>
   searchedQuery: SearchedQuery
 }
 
 function PostList() {
   const {
-    posts,
-    users,
+    postsPromise,
+    usersPromise,
     searchedQuery: { q, userId },
   }: LoaderData = useLoaderData()
   const queryRef = useRef<HTMLInputElement>(null)
@@ -54,22 +56,49 @@ function PostList() {
           </div>
           <div className="form-group">
             <label htmlFor="userId">Author</label>
-            <select itemType="search" name="userId" id="userId" ref={userIdRef}>
-              <option value="">Any</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
-              ))}
-            </select>
+            <Suspense
+              fallback={
+                <select itemType="search" name="userId" id="userId" disabled>
+                  <option value="">Loading...</option>
+                </select>
+              }
+            >
+              <Await resolve={usersPromise}>
+                {(users) => (
+                  <select
+                    itemType="search"
+                    name="userId"
+                    id="userId"
+                    ref={userIdRef}
+                  >
+                    <option value="">Any</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </Await>
+            </Suspense>
           </div>
           <button className="btn">Filter</button>
         </div>
       </Form>
       <div className="card-grid">
-        {posts.map((post) => (
-          <PostCard key={post.id} {...post} />
-        ))}
+        <Suspense
+          fallback={
+            <SkeletonList amount={6}>
+              <PostCardSkeleton />
+            </SkeletonList>
+          }
+        >
+          <Await resolve={postsPromise}>
+            {(posts) =>
+              posts.map((post) => <PostCard key={post.id} {...post} />)
+            }
+          </Await>
+        </Suspense>
       </div>
     </>
   )
@@ -85,10 +114,10 @@ async function loader({ request }: LoaderFunctionArgs) {
   if (q.trim() !== "") searchedQuery.q = q
   if (userId.trim() !== "") searchedQuery.userId = userId
 
-  const posts = getPosts(searchedQuery, { signal })
-  const users = getUsers({ signal })
+  const postsPromise = getPosts(searchedQuery, { signal })
+  const usersPromise = getUsers({ signal })
 
-  return { posts: await posts, searchedQuery, users: await users }
+  return { postsPromise, usersPromise, searchedQuery }
 }
 
 export const postListRoute = {

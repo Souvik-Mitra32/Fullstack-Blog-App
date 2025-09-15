@@ -1,10 +1,10 @@
 import {
+  Await,
   Form,
   Link,
   redirect,
   useActionData,
   useLoaderData,
-  useNavigation,
   type LoaderFunctionArgs,
 } from "react-router"
 import { getUsers } from "../api/users"
@@ -12,17 +12,17 @@ import type { User } from "./User"
 import { createPost, editPost, getPostById } from "../api/posts"
 import { FormGroup } from "../components/FormGroup"
 import type { Post } from "./Post"
+import { Suspense } from "react"
+import { SkeletonInput } from "../components/Skeleton"
 
 function PostForm() {
   type LoaderData = {
-    users: User[]
-    post?: Post
+    usersPromise: Promise<User[]>
+    postPromise?: Promise<Post>
   }
 
-  const { users, post }: LoaderData = useLoaderData()
+  const { usersPromise, postPromise }: LoaderData = useLoaderData()
   const actionData = useActionData() as { errors?: Record<string, string> }
-  const { state } = useNavigation()
-  const isLoading = state === "submitting" || state === "loading"
 
   return (
     <>
@@ -31,45 +31,67 @@ function PostForm() {
         <div className="form-row">
           <FormGroup error={actionData?.errors?.title}>
             <label htmlFor="title">Title</label>
-            <input
-              type="text"
-              name="title"
-              id="title"
-              defaultValue={post ? post.title : ""}
-            />
+            <Suspense fallback={<SkeletonInput />}>
+              <Await resolve={postPromise}>
+                {(post) => (
+                  <input
+                    type="text"
+                    name="title"
+                    id="title"
+                    defaultValue={post ? post.title : ""}
+                  />
+                )}
+              </Await>
+            </Suspense>
           </FormGroup>
           <div className="form-group">
             <label htmlFor="userId">Author</label>
-            <select
-              name="userId"
-              id="userId"
-              defaultValue={post ? post.userId : "1"}
-            >
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
-              ))}
-            </select>
+            <Suspense fallback={<SkeletonInput />}>
+              <Await resolve={postPromise}>
+                {(post) => (
+                  <select
+                    name="userId"
+                    id="userId"
+                    defaultValue={post ? post.userId : "1"}
+                  >
+                    <Suspense fallback={<option>Loading...</option>}>
+                      <Await resolve={usersPromise}>
+                        {(users) =>
+                          users.map((user) => (
+                            <option key={user.id} value={user.id}>
+                              {user.name}
+                            </option>
+                          ))
+                        }
+                      </Await>
+                    </Suspense>
+                  </select>
+                )}
+              </Await>
+            </Suspense>
           </div>
         </div>
         <div className="form-row">
           <FormGroup error={actionData?.errors?.body}>
             <label htmlFor="body">Body</label>
-            <textarea
-              name="body"
-              id="body"
-              defaultValue={post ? post.body : ""}
-            ></textarea>
+            <Suspense fallback={<SkeletonInput />}>
+              <Await resolve={postPromise}>
+                {(post) => (
+                  <textarea
+                    name="body"
+                    id="body"
+                    defaultValue={post ? post.body : ""}
+                  />
+                )}
+              </Await>
+            </Suspense>
           </FormGroup>
         </div>
         <div className="form-row form-btn-row">
           <Link className="btn btn-outline" to="..">
             Cancel
           </Link>
-          <button className="btn" disabled={isLoading}>
-            Create
-          </button>
+          <button className="btn">Create</button>
         </div>
 
         {actionData?.errors?.form && (
@@ -81,14 +103,14 @@ function PostForm() {
 }
 
 async function loader({ request: { signal }, params }: LoaderFunctionArgs) {
-  const users = getUsers({ signal })
+  const usersPromise = getUsers({ signal })
 
   if (params.id) {
-    const post = getPostById(params.id, { signal })
-    return { users: await users, post: await post }
+    const postPromise = getPostById(params.id, { signal })
+    return { usersPromise, postPromise }
   }
 
-  return { users: await users }
+  return { usersPromise }
 }
 
 async function action({ request, params }: LoaderFunctionArgs) {

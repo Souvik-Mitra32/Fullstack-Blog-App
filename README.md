@@ -20,7 +20,7 @@ This project is being built in **3 versions**, each focusing on different aspect
   - Filter posts by users
   - Add & edit posts through forms
 
-- **v3 (Planned)** – Focused on clean code & UX improvements
+- **v3 (Completed)** – Focused on clean code & UX improvements
   - Better file structure & maintainability
   - Skeleton loaders for better user experience
   - More polished UI with smooth loading states
@@ -111,10 +111,6 @@ The React app will run on:
 - Backend (server) → Deploy to Render
 - Update your environment variables accordingly:
   Client .env.production & Server Environment Variables (Render Dashboard)
-
-## 🔮 Future Roadmap
-
-- Refactor file structure, add skeleton loaders, clean code improvements
 
 ## 📜 License
 
