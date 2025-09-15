@@ -5,6 +5,7 @@ import {
   redirect,
   useActionData,
   useLoaderData,
+  useNavigation,
   type LoaderFunctionArgs,
 } from "react-router"
 import { getUsers } from "../api/users"
@@ -23,6 +24,8 @@ function PostForm() {
 
   const { usersPromise, postPromise }: LoaderData = useLoaderData()
   const actionData = useActionData() as { errors?: Record<string, string> }
+  const { state } = useNavigation()
+  const isSubmitting = state === "submitting" || state === "loading"
 
   return (
     <>
@@ -91,7 +94,15 @@ function PostForm() {
           <Link className="btn btn-outline" to="..">
             Cancel
           </Link>
-          <button className="btn">Create</button>
+          <button className="btn" disabled={isSubmitting}>
+            {postPromise
+              ? isSubmitting
+                ? "Saving"
+                : "Save"
+              : isSubmitting
+              ? "Creating"
+              : "Create"}
+          </button>
         </div>
 
         {actionData?.errors?.form && (
